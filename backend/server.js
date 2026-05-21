@@ -11,6 +11,7 @@ app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');
 const storeRoutes = require('./routes/storeRoutes');
+const ratingRoutes = require('./routes/ratingRoutes');
 
 // Basic Route
 app.get('/', (req, res) => {
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/stores', storeRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 // Start the server
 app.listen(PORT, () => {
