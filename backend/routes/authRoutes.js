@@ -12,4 +12,12 @@ router.post('/register', authController.register);
 // @access  Public
 router.post('/login', authController.login);
 
+const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
+
+// @route   POST /api/auth/admin/register-owner
+// @desc    Register a new Store Owner (Admin Only)
+// @access  Private/Admin
+router.post('/admin/register-owner', authMiddleware, roleMiddleware(['ADMIN']), authController.registerStoreOwner);
+
 module.exports = router;

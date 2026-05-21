@@ -16,7 +16,8 @@ const validatePassword = (password) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, address, role } = req.body;
+    const { name, email, password, address } = req.body;
+    const role = 'NORMAL'; // Force role to NORMAL for public registration
 
     // 1. Validations
     if (!name || name.length > 20) {
@@ -57,6 +58,53 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error('Registration Error:', error);
     res.status(500).json({ message: 'Internal server error during registration.' });
+  }
+};
+
+exports.registerStoreOwner = async (req, res) => {
+  try {
+    const { name, email, password, address } = req.body;
+    const role = 'STORE_OWNER'; // Force role to STORE_OWNER
+
+    // 1. Validations
+    if (!name || name.length > 20) {
+      return res.status(400).json({ message: 'Name must be maximum 20 characters.' });
+    }
+    if (!address || address.length > 400) {
+      return res.status(400).json({ message: 'Address must not exceed 400 characters.' });
+    }
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ message: 'Invalid email format.' });
+    }
+    if (!password || !validatePassword(password)) {
+      return res.status(400).json({ message: 'Password must be 8-16 characters long and include at least one uppercase letter and one special character.' });
+    }
+
+    // 2. Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User with this email already exists.' });
+    }
+
+    // 3. Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 4. Create User
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        address,
+        role,
+      },
+    });
+
+    res.status(201).json({ message: 'Store Owner created successfully', userId: newUser.id });
+  } catch (error) {
+    console.error('Admin Registration Error:', error);
+    res.status(500).json({ message: 'Internal server error during store owner registration.' });
   }
 };
 
