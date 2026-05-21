@@ -6,6 +6,11 @@ const OwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Setup Store State
+  const [storeData, setStoreData] = useState({ name: '', email: '', address: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -19,6 +24,25 @@ const OwnerDashboard = () => {
     };
     fetchDashboard();
   }, []);
+
+  const handleCreateStore = async (e) => {
+    e.preventDefault();
+    setIsCreating(true);
+    setCreateError('');
+    try {
+      await apiFetch('/stores', {
+        method: 'POST',
+        body: JSON.stringify(storeData)
+      });
+      // Store created successfully! Refresh dashboard data
+      const data = await apiFetch('/store-owner/dashboard');
+      setDashboardData(data);
+    } catch (err) {
+      setCreateError(err.message || 'Failed to setup store');
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -38,11 +62,64 @@ const OwnerDashboard = () => {
 
   if (!dashboardData) {
     return (
-      <div className="card-glass p-12 text-center">
-        <h2 className="heading-2 mb-4">No Store Assigned</h2>
-        <p className="text-[var(--color-text-muted)]">
-          You currently do not have a store assigned to your account. Please contact the administrator.
-        </p>
+      <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
+        <div className="text-center">
+          <h1 className="heading-1 text-3xl mb-2">Setup Your Store</h1>
+          <p className="text-[var(--color-text-muted)]">
+            Welcome to the platform! Please enter your store details below to start receiving ratings.
+          </p>
+        </div>
+
+        <div className="card-glass p-8">
+          {createError && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-200 text-sm text-center">
+              {createError}
+            </div>
+          )}
+
+          <form onSubmit={handleCreateStore} className="space-y-5">
+            <div>
+              <label className="label-text">Store Name</label>
+              <input 
+                type="text" 
+                className="input-field"
+                placeholder="My Awesome Store"
+                value={storeData.name}
+                onChange={(e) => setStoreData({...storeData, name: e.target.value})}
+                required 
+              />
+            </div>
+            <div>
+              <label className="label-text">Store Contact Email</label>
+              <input 
+                type="email" 
+                className="input-field"
+                placeholder="store@example.com"
+                value={storeData.email}
+                onChange={(e) => setStoreData({...storeData, email: e.target.value})}
+                required 
+              />
+            </div>
+            <div>
+              <label className="label-text">Physical Address</label>
+              <textarea 
+                className="input-field min-h-[100px]"
+                placeholder="123 Commerce St..."
+                value={storeData.address}
+                onChange={(e) => setStoreData({...storeData, address: e.target.value})}
+                required 
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={isCreating}
+              className="btn-primary w-full py-3 mt-4"
+            >
+              {isCreating ? 'Setting up...' : 'Create My Store'}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }

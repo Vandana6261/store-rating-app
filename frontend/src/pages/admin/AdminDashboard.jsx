@@ -12,6 +12,12 @@ const AdminDashboard = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
+  // Create Store Owner State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [ownerData, setOwnerData] = useState({ name: '', email: '', password: '', address: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
   useEffect(() => {
     fetchDashboardData();
   }, [sortBy, sortOrder, searchTerm]);
@@ -19,11 +25,9 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch Stats
       const statsData = await apiFetch('/admin/dashboard');
       setStats(statsData);
 
-      // Fetch Users with query params
       const queryParams = new URLSearchParams({
         sortBy,
         order: sortOrder,
@@ -48,10 +52,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleCreateOwner = async (e) => {
+    e.preventDefault();
+    setIsCreating(true);
+    setCreateError('');
+    try {
+      await apiFetch('/auth/admin/register-owner', {
+        method: 'POST',
+        body: JSON.stringify(ownerData)
+      });
+      setShowCreateModal(false);
+      setOwnerData({ name: '', email: '', password: '', address: '' });
+      fetchDashboardData(); // Refresh list to show new user
+    } catch (err) {
+      setCreateError(err.message || 'Failed to create store owner');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in relative">
       <div className="flex justify-between items-center">
         <h1 className="heading-1 text-3xl">Admin Dashboard</h1>
+        <button onClick={() => setShowCreateModal(true)} className="btn-primary py-2 text-sm">
+          + Create Store Owner
+        </button>
       </div>
 
       {error && (
@@ -160,6 +186,80 @@ const AdminDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Create Store Owner Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="card-glass w-full max-w-md p-8 animate-slide-up bg-slate-900 border-slate-700">
+            <h2 className="heading-2 text-xl mb-6">Create Store Owner</h2>
+            
+            {createError && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                {createError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateOwner} className="space-y-4">
+              <div>
+                <label className="label-text">Name (Max 20 chars)</label>
+                <input 
+                  type="text" 
+                  className="input-field py-2"
+                  value={ownerData.name}
+                  onChange={(e) => setOwnerData({...ownerData, name: e.target.value})}
+                  required maxLength={20}
+                />
+              </div>
+              <div>
+                <label className="label-text">Email</label>
+                <input 
+                  type="email" 
+                  className="input-field py-2"
+                  value={ownerData.email}
+                  onChange={(e) => setOwnerData({...ownerData, email: e.target.value})}
+                  required 
+                />
+              </div>
+              <div>
+                <label className="label-text">Password</label>
+                <input 
+                  type="password" 
+                  className="input-field py-2"
+                  value={ownerData.password}
+                  onChange={(e) => setOwnerData({...ownerData, password: e.target.value})}
+                  required 
+                />
+              </div>
+              <div>
+                <label className="label-text">Address</label>
+                <textarea 
+                  className="input-field py-2 min-h-[60px]"
+                  value={ownerData.address}
+                  onChange={(e) => setOwnerData({...ownerData, address: e.target.value})}
+                  required maxLength={400}
+                />
+              </div>
+              
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowCreateModal(false)}
+                  className="btn-secondary flex-1 py-2 text-sm"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isCreating}
+                  className="btn-primary flex-1 py-2 text-sm"
+                >
+                  {isCreating ? 'Creating...' : 'Create Owner'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
