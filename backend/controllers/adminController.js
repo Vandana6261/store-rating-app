@@ -19,7 +19,7 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const { name, email, address, role, sortBy, order } = req.query;
+    const { name, email, address, role, search, sortBy, order } = req.query;
 
     const query = {
       where: {},
@@ -32,7 +32,20 @@ exports.getUsers = async (req, res) => {
       }
     };
 
-    // Filtering
+    // Global Search (name, email, or role)
+    if (search) {
+      query.where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+      
+      const searchUpper = search.toUpperCase();
+      if (['ADMIN', 'NORMAL', 'STORE_OWNER'].includes(searchUpper)) {
+        query.where.OR.push({ role: searchUpper });
+      }
+    }
+
+    // Specific Filtering
     if (name) query.where.name = { contains: name, mode: 'insensitive' };
     if (email) query.where.email = { contains: email, mode: 'insensitive' };
     if (address) query.where.address = { contains: address, mode: 'insensitive' };

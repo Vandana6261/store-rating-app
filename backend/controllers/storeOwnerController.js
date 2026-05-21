@@ -20,7 +20,7 @@ exports.getDashboard = async (req, res) => {
     });
 
     if (!store) {
-      return res.status(404).json({ message: 'No store found for this owner.' });
+      return res.status(200).json(null);
     }
 
     // Calculate average rating
