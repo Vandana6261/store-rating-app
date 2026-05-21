@@ -27,7 +27,7 @@
 @layer components {
   /* --- Glassmorphism Cards --- */
   .card-glass {
-    @apply bg-[var(--color-surface)]/70 backdrop-blur-md border border-[var(--color-border)]/50 rounded-2xl shadow-xl;
+    @apply bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-2xl shadow-xl;
   }
 
   /* --- Buttons --- */
@@ -46,9 +46,9 @@
 
   /* --- Forms & Inputs --- */
   .input-field {
-    @apply w-full px-4 py-3 rounded-lg bg-[var(--color-bg)]/50 border border-[var(--color-border)]
+    @apply w-full px-4 py-3 rounded-lg bg-slate-900/50 border border-[var(--color-border)]
            text-[var(--color-text)] placeholder-[var(--color-text-muted)]
-           focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)]
+           focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-[var(--color-primary)]
            transition-all duration-300;
   }
 

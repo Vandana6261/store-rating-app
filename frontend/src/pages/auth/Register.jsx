@@ -51,17 +51,16 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="label-text">Full Name (20-60 characters)</label>
+            <label className="label-text">Full Name (Max 20 characters)</label>
             <input
               type="text"
               name="name"
               className="input-field"
-              placeholder="John Doe the First"
+              placeholder="John Doe"
               value={formData.name}
               onChange={handleChange}
               required
-              minLength={20}
-              maxLength={60}
+              maxLength={20}
             />
           </div>
 

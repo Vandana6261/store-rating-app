@@ -19,8 +19,8 @@ exports.register = async (req, res) => {
     const { name, email, password, address, role } = req.body;
 
     // 1. Validations
-    if (!name || name.length < 20 || name.length > 60) {
-      return res.status(400).json({ message: 'Name must be between 20 and 60 characters.' });
+    if (!name || name.length > 20) {
+      return res.status(400).json({ message: 'Name must be maximum 20 characters.' });
     }
     if (!address || address.length > 400) {
       return res.status(400).json({ message: 'Address must not exceed 400 characters.' });
@@ -67,13 +67,13 @@ exports.login = async (req, res) => {
     // 1. Check if user exists
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(404).json({ message: 'User not found with this email address.' });
     }
 
     // 2. Validate Password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Incorrect password. Please try again.' });
     }
 
     // 3. Generate JWT
