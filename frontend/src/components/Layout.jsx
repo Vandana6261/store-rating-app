@@ -1,10 +1,12 @@
-import React from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -38,6 +40,10 @@ const Layout = () => {
                 </div>
               )}
               
+              <button onClick={() => setShowPasswordModal(true)} className="text-sm font-medium text-[var(--color-text-muted)] hover:text-white transition-colors mr-2">
+                Settings
+              </button>
+              
               <button onClick={handleLogout} className="btn-secondary text-sm px-4 py-2">
                 Logout
               </button>
@@ -45,6 +51,9 @@ const Layout = () => {
           </div>
         </div>
       </header>
+
+      {/* Modals */}
+      {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
 
       {/* Main Content Area */}
       <main className="flex-grow">

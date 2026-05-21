@@ -4,6 +4,7 @@ import { apiFetch } from '../../utils/api';
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalStores: 0, totalRatings: 0 });
   const [users, setUsers] = useState([]);
+  const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -12,9 +13,9 @@ const AdminDashboard = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
-  // Create Store Owner State
+  // Create User State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [ownerData, setOwnerData] = useState({ name: '', email: '', password: '', address: '' });
+  const [userData, setUserData] = useState({ name: '', email: '', password: '', address: '', role: 'NORMAL' });
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
@@ -36,6 +37,10 @@ const AdminDashboard = () => {
       
       const usersData = await apiFetch(`/admin/users?${queryParams}`);
       setUsers(usersData);
+
+      // Fetch Stores
+      const storesData = await apiFetch(`/stores?${queryParams}`);
+      setStores(storesData);
     } catch (err) {
       setError(err.message || 'Failed to load dashboard data');
     } finally {
@@ -52,20 +57,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleCreateOwner = async (e) => {
+  const handleCreateUser = async (e) => {
     e.preventDefault();
     setIsCreating(true);
     setCreateError('');
     try {
-      await apiFetch('/auth/admin/register-owner', {
+      await apiFetch('/auth/admin/register-user', {
         method: 'POST',
-        body: JSON.stringify(ownerData)
+        body: JSON.stringify(userData)
       });
       setShowCreateModal(false);
-      setOwnerData({ name: '', email: '', password: '', address: '' });
+      setUserData({ name: '', email: '', password: '', address: '', role: 'NORMAL' });
       fetchDashboardData(); // Refresh list to show new user
     } catch (err) {
-      setCreateError(err.message || 'Failed to create store owner');
+      setCreateError(err.message || 'Failed to create user');
     } finally {
       setIsCreating(false);
     }
@@ -76,7 +81,7 @@ const AdminDashboard = () => {
       <div className="flex justify-between items-center">
         <h1 className="heading-1 text-3xl">Admin Dashboard</h1>
         <button onClick={() => setShowCreateModal(true)} className="btn-primary py-2 text-sm">
-          + Create Store Owner
+          + Create User
         </button>
       </div>
 
@@ -187,11 +192,57 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Create Store Owner Modal */}
+      {/* Stores Table Area */}
+      <div className="card-glass overflow-hidden mt-8">
+        <div className="p-6 border-b border-[var(--color-border)]">
+          <h2 className="heading-2 text-xl">Store Management</h2>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[var(--color-surface)]/50 border-b border-[var(--color-border)]">
+                <th className="px-6 py-4 font-semibold text-sm text-[var(--color-text-muted)]">Store Name</th>
+                <th className="px-6 py-4 font-semibold text-sm text-[var(--color-text-muted)]">Email</th>
+                <th className="px-6 py-4 font-semibold text-sm text-[var(--color-text-muted)]">Address</th>
+                <th className="px-6 py-4 font-semibold text-sm text-[var(--color-text-muted)]">Overall Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-8 text-center text-[var(--color-text-muted)]">Loading stores...</td>
+                </tr>
+              ) : stores.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-8 text-center text-[var(--color-text-muted)]">No stores found.</td>
+                </tr>
+              ) : (
+                stores.map((store) => (
+                  <tr key={store.id} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-surface)]/30 transition-colors">
+                    <td className="px-6 py-4 font-medium">{store.name}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-muted)]">{store.email}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-muted)] truncate max-w-xs">{store.address}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        <span className="font-bold text-white">{store.overallRating}</span>
+                        <span className="text-yellow-400">★</span>
+                        <span className="text-xs text-[var(--color-text-muted)] ml-1">({store.totalRatings})</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Create User Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="card-glass w-full max-w-md p-8 animate-slide-up bg-slate-900 border-slate-700">
-            <h2 className="heading-2 text-xl mb-6">Create Store Owner</h2>
+            <h2 className="heading-2 text-xl mb-6">Create User</h2>
             
             {createError && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-200 text-sm">
@@ -199,14 +250,14 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            <form onSubmit={handleCreateOwner} className="space-y-4">
+            <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
                 <label className="label-text">Name (Max 20 chars)</label>
                 <input 
                   type="text" 
                   className="input-field py-2"
-                  value={ownerData.name}
-                  onChange={(e) => setOwnerData({...ownerData, name: e.target.value})}
+                  value={userData.name}
+                  onChange={(e) => setUserData({...userData, name: e.target.value})}
                   required maxLength={20}
                 />
               </div>
@@ -215,8 +266,8 @@ const AdminDashboard = () => {
                 <input 
                   type="email" 
                   className="input-field py-2"
-                  value={ownerData.email}
-                  onChange={(e) => setOwnerData({...ownerData, email: e.target.value})}
+                  value={userData.email}
+                  onChange={(e) => setUserData({...userData, email: e.target.value})}
                   required 
                 />
               </div>
@@ -225,8 +276,8 @@ const AdminDashboard = () => {
                 <input 
                   type="password" 
                   className="input-field py-2"
-                  value={ownerData.password}
-                  onChange={(e) => setOwnerData({...ownerData, password: e.target.value})}
+                  value={userData.password}
+                  onChange={(e) => setUserData({...userData, password: e.target.value})}
                   required 
                 />
               </div>
@@ -234,10 +285,24 @@ const AdminDashboard = () => {
                 <label className="label-text">Address</label>
                 <textarea 
                   className="input-field py-2 min-h-[60px]"
-                  value={ownerData.address}
-                  onChange={(e) => setOwnerData({...ownerData, address: e.target.value})}
+                  value={userData.address}
+                  onChange={(e) => setUserData({...userData, address: e.target.value})}
                   required maxLength={400}
                 />
+              </div>
+              
+              <div>
+                <label className="label-text">Role</label>
+                <select
+                  className="input-field py-2"
+                  value={userData.role}
+                  onChange={(e) => setUserData({...userData, role: e.target.value})}
+                  required
+                >
+                  <option value="NORMAL">Normal User</option>
+                  <option value="STORE_OWNER">Store Owner</option>
+                  <option value="ADMIN">Administrator</option>
+                </select>
               </div>
               
               <div className="flex gap-4 pt-4">
@@ -253,7 +318,7 @@ const AdminDashboard = () => {
                   disabled={isCreating}
                   className="btn-primary flex-1 py-2 text-sm"
                 >
-                  {isCreating ? 'Creating...' : 'Create Owner'}
+                  {isCreating ? 'Creating...' : 'Create User'}
                 </button>
               </div>
             </form>

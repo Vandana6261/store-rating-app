@@ -15,9 +15,14 @@ router.post('/login', authController.login);
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 
-// @route   POST /api/auth/admin/register-owner
-// @desc    Register a new Store Owner (Admin Only)
+// @route   POST /api/auth/admin/register-user
+// @desc    Register a new user with any role (Admin Only)
 // @access  Private/Admin
-router.post('/admin/register-owner', authMiddleware, roleMiddleware(['ADMIN']), authController.registerStoreOwner);
+router.post('/admin/register-user', authMiddleware, roleMiddleware(['ADMIN']), authController.registerUserByAdmin);
+
+// @route   PATCH /api/auth/change-password
+// @desc    Change password for logged-in user
+// @access  Private
+router.patch('/change-password', authMiddleware, authController.changePassword);
 
 module.exports = router;

@@ -6,7 +6,7 @@ exports.addStore = async (req, res) => {
     const ownerId = req.user.id; // Auto-assign to the logged-in Store Owner
 
     // Check if the owner already has a store
-    const existingStore = await prisma.store.findUnique({ where: { ownerId } });
+    const existingStore = await prisma.store.findFirst({ where: { ownerId } });
     if (existingStore) {
       return res.status(400).json({ message: 'You already have a store assigned to your account.' });
     }

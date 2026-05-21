@@ -9,8 +9,8 @@ const validateEmail = (email) => {
 };
 
 const validatePassword = (password) => {
-  // 8-16 characters, at least one uppercase letter, and one special character
-  const re = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,16}$/;
+  // 8-20 characters, at least one uppercase letter, and one special character
+  const re = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,20}$/;
   return re.test(password);
 };
 
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email format.' });
     }
     if (!password || !validatePassword(password)) {
-      return res.status(400).json({ message: 'Password must be 8-16 characters long and include at least one uppercase letter and one special character.' });
+      return res.status(400).json({ message: 'Password must be 8-20 characters long and include at least one uppercase letter and one special character.' });
     }
 
     // 2. Check if user already exists
@@ -61,10 +61,12 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.registerStoreOwner = async (req, res) => {
+exports.registerUserByAdmin = async (req, res) => {
   try {
-    const { name, email, password, address } = req.body;
-    const role = 'STORE_OWNER'; // Force role to STORE_OWNER
+    const { name, email, password, address, role } = req.body;
+
+    // Default to NORMAL if no valid role provided
+    const userRole = ['ADMIN', 'NORMAL', 'STORE_OWNER'].includes(role) ? role : 'NORMAL';
 
     // 1. Validations
     if (!name || name.length > 20) {
@@ -77,7 +79,7 @@ exports.registerStoreOwner = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email format.' });
     }
     if (!password || !validatePassword(password)) {
-      return res.status(400).json({ message: 'Password must be 8-16 characters long and include at least one uppercase letter and one special character.' });
+      return res.status(400).json({ message: 'Password must be 8-20 characters long and include at least one uppercase letter and one special character.' });
     }
 
     // 2. Check if user already exists
@@ -97,11 +99,11 @@ exports.registerStoreOwner = async (req, res) => {
         email,
         password: hashedPassword,
         address,
-        role,
+        role: userRole,
       },
     });
 
-    res.status(201).json({ message: 'Store Owner created successfully', userId: newUser.id });
+    res.status(201).json({ message: `${userRole} created successfully`, userId: newUser.id });
   } catch (error) {
     console.error('Admin Registration Error:', error);
     res.status(500).json({ message: 'Internal server error during store owner registration.' });
@@ -147,5 +149,43 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ message: 'Internal server error during login.' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required.' });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({ message: 'New password must be 8-20 characters long and include at least one uppercase letter and one special character.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    res.status(500).json({ message: 'Internal server error while changing password.' });
   }
 };
