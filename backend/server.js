@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');
+const storeRoutes = require('./routes/storeRoutes');
 
 // Basic Route
 app.get('/', (req, res) => {
@@ -18,8 +19,11 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/stores', storeRoutes);
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
