@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  NORMAL
+  STORE_OWNER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   // min 20, max 60 handled in validation
+  email     String   @unique
+  password  String
+  address   String   // max 400 handled in validation
+  role      Role     @default(NORMAL)
+  
+  stores    Store[]  // A user (STORE_OWNER) can own multiple stores
+  ratings   Rating[] // A user can submit multiple ratings
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  address   String
+  ownerId   Int?     // Optional: specific to STORE_OWNER role
+  owner     User?    @relation(fields: [ownerId], references: [id])
+  
+  ratings   Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  score     Int      // 1 to 5 handled in validation
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Unique constraint to ensure one rating per user per store
+  @@unique([userId, storeId])
+}
