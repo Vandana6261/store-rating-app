@@ -2,7 +2,14 @@ const prisma = require('../config/db');
 
 exports.addStore = async (req, res) => {
   try {
-    const { name, email, address, ownerId } = req.body;
+    const { name, email, address } = req.body;
+    const ownerId = req.user.id; // Auto-assign to the logged-in Store Owner
+
+    // Check if the owner already has a store
+    const existingStore = await prisma.store.findUnique({ where: { ownerId } });
+    if (existingStore) {
+      return res.status(400).json({ message: 'You already have a store assigned to your account.' });
+    }
 
     if (!name || !email || !address) {
       return res.status(400).json({ message: 'Name, email, and address are required to add a store.' });
@@ -13,7 +20,7 @@ exports.addStore = async (req, res) => {
         name,
         email,
         address,
-        ownerId: ownerId || null
+        ownerId
       },
     });
 

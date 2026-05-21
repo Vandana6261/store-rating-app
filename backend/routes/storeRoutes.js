@@ -5,9 +5,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 
 // @route   POST /api/stores
-// @desc    Add a new store (Admin Only)
-// @access  Private/Admin
-router.post('/', authMiddleware, roleMiddleware(['ADMIN']), storeController.addStore);
+// @desc    Add a new store (Store Owner Only)
+// @access  Private/StoreOwner
+router.post('/', authMiddleware, roleMiddleware(['STORE_OWNER']), storeController.addStore);
 
 // @route   GET /api/stores
 // @desc    Get all stores (with optional search and sorting)
