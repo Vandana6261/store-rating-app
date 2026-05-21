@@ -10,10 +10,10 @@ import Register from './pages/auth/Register';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Placeholder Pages for Phase 6
-const AdminDashboard = () => <div className="card-glass p-8 text-center"><h1 className="heading-2">Admin Dashboard</h1></div>;
-const OwnerDashboard = () => <div className="card-glass p-8 text-center"><h1 className="heading-2">Store Owner Dashboard</h1></div>;
-const NormalDashboard = () => <div className="card-glass p-8 text-center"><h1 className="heading-2">Store Listings</h1></div>;
+// Dashboards
+import AdminDashboard from './pages/admin/AdminDashboard';
+import OwnerDashboard from './pages/owner/OwnerDashboard';
+import NormalDashboard from './pages/normal/NormalDashboard';
 
 // Root Redirector based on Role
 const RootRedirect = () => {
