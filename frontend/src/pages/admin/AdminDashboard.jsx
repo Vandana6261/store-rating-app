@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   
   // Sorting & Filtering State
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -20,8 +21,15 @@ const AdminDashboard = () => {
   const [createError, setCreateError] = useState('');
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchDashboardData();
-  }, [sortBy, sortOrder, searchTerm]);
+  }, [sortBy, sortOrder, debouncedSearchTerm]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -32,7 +40,7 @@ const AdminDashboard = () => {
       const queryParams = new URLSearchParams({
         sortBy,
         order: sortOrder,
-        ...(searchTerm && { search: searchTerm })
+        ...(debouncedSearchTerm && { search: debouncedSearchTerm })
       }).toString();
       
       const usersData = await apiFetch(`/admin/users?${queryParams}`);

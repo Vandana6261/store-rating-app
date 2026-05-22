@@ -40,8 +40,10 @@ exports.getUsers = async (req, res) => {
       ];
       
       const searchUpper = search.toUpperCase();
-      if (['ADMIN', 'NORMAL', 'STORE_OWNER'].includes(searchUpper)) {
-        query.where.OR.push({ role: searchUpper });
+      const roles = ['ADMIN', 'NORMAL', 'STORE_OWNER'];
+      const matchingRoles = roles.filter(r => r.includes(searchUpper));
+      for (const r of matchingRoles) {
+        query.where.OR.push({ role: r });
       }
     }
 
