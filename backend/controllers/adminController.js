@@ -32,7 +32,7 @@ exports.getUsers = async (req, res) => {
       }
     };
 
-    // Global Search (name, email, or role)
+
     if (search) {
       query.where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -47,16 +47,16 @@ exports.getUsers = async (req, res) => {
       }
     }
 
-    // Specific Filtering
+
     if (name) query.where.name = { contains: name, mode: 'insensitive' };
     if (email) query.where.email = { contains: email, mode: 'insensitive' };
     if (address) query.where.address = { contains: address, mode: 'insensitive' };
     if (role) query.where.role = role.toUpperCase();
 
-    // Fetch users
+
     let users = await prisma.user.findMany(query);
 
-    // Format output (Calculate Store rating if user is STORE_OWNER)
+
     users = users.map(user => {
       let storeRating = null;
       let storeName = null;
@@ -85,7 +85,7 @@ exports.getUsers = async (req, res) => {
       };
     });
 
-    // Handle JS sorting if requested
+
     if (sortBy) {
       const sortOrder = order && order.toLowerCase() === 'desc' ? -1 : 1;
       users.sort((a, b) => {

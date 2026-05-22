@@ -4,7 +4,7 @@ exports.getDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Find the store(s) owned by this user
+
     // Assuming a store owner has one primary store for this dashboard
     const store = await prisma.store.findFirst({
       where: { ownerId: userId },
@@ -23,7 +23,7 @@ exports.getDashboard = async (req, res) => {
       return res.status(200).json(null);
     }
 
-    // Calculate average rating
+
     const totalRatings = store.ratings.length;
     let averageRating = 0;
 
@@ -32,7 +32,7 @@ exports.getDashboard = async (req, res) => {
       averageRating = parseFloat((sum / totalRatings).toFixed(1));
     }
 
-    // Format the list of users who submitted ratings
+
     const ratingUsers = store.ratings.map(r => ({
       userId: r.user.id,
       name: r.user.name,

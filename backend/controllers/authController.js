@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
     const { name, email, password, address } = req.body;
     const role = 'NORMAL'; // Force role to NORMAL for public registration
 
-    // 1. Validations
+
     if (!name || name.length > 20) {
       return res.status(400).json({ message: 'Name must be maximum 20 characters.' });
     }
@@ -33,17 +33,17 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Password must be 8-20 characters long and include at least one uppercase letter and one special character.' });
     }
 
-    // 2. Check if user already exists
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists.' });
     }
 
-    // 3. Hash password
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Create User
+
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -68,7 +68,7 @@ exports.registerUserByAdmin = async (req, res) => {
     // Default to NORMAL if no valid role provided
     const userRole = ['ADMIN', 'NORMAL', 'STORE_OWNER'].includes(role) ? role : 'NORMAL';
 
-    // 1. Validations
+
     if (!name || name.length > 20) {
       return res.status(400).json({ message: 'Name must be maximum 20 characters.' });
     }
@@ -82,17 +82,17 @@ exports.registerUserByAdmin = async (req, res) => {
       return res.status(400).json({ message: 'Password must be 8-20 characters long and include at least one uppercase letter and one special character.' });
     }
 
-    // 2. Check if user already exists
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists.' });
     }
 
-    // 3. Hash password
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Create User
+
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -114,19 +114,19 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Check if user exists
+
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: 'User not found with this email address.' });
     }
 
-    // 2. Validate Password
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Incorrect password. Please try again.' });
     }
 
-    // 3. Generate JWT
+
     const payload = {
       id: user.id,
       role: user.role,

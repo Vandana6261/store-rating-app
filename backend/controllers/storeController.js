@@ -35,14 +35,14 @@ exports.getStores = async (req, res) => {
   try {
     const { search, sortBy, order } = req.query;
 
-    // Build the query object
+
     const query = {
       include: {
         ratings: true, // We include ratings so we can calculate the average
       }
     };
 
-    // Searching
+
     if (search) {
       query.where = {
         OR: [
@@ -52,7 +52,7 @@ exports.getStores = async (req, res) => {
       };
     }
 
-    // Sorting (fallback to ascending if not provided)
+
     if (sortBy) {
       const sortOrder = order && order.toLowerCase() === 'desc' ? 'desc' : 'asc';
       // Allowed sort fields for stores: name, email, address, createdAt
@@ -64,10 +64,10 @@ exports.getStores = async (req, res) => {
       }
     }
 
-    // Fetch stores from DB
+
     let stores = await prisma.store.findMany(query);
 
-    // Calculate Average Rating and format response
+
     stores = stores.map(store => {
       const totalRatings = store.ratings.length;
       const sumRatings = store.ratings.reduce((acc, curr) => acc + curr.score, 0);
